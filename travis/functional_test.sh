@@ -1,15 +1,15 @@
 #!/bin/bash
 
-URL="writepath-tb-lb-525490389.ap-northeast-1.elb.amazonaws.com:16888/health_check/"
-status_of_test_dev=$(aws ecs describe-services --services service-test-dev --cluster writepath-dev --region ap-northeast-1 --query 'services[0].status')
-status_of_elb=$(aws elbv2 describe-load-balancers --names writepath-tb-lb --region ap-northeast-1 --query 'LoadBalancers[0].State.Code')
+URL="http://demo-1046280049.ap-northeast-1.elb.amazonaws.com:8787/hello"
+status_of_test_dev=$(aws ecs describe-services --services demo-service-test --cluster demo --region ap-northeast-1 --query 'services[0].status')
+status_of_elb=$(aws elbv2 describe-load-balancers --names demo --region ap-northeast-1 --query 'LoadBalancers[0].State.Code')
 
 echo "Check ELB status"
 count_status_of_elb=0
 until [ "$status_of_elb" = "\"active"\" ]
 do
     sleep 5
-    status_of_elb=$(aws elbv2 describe-load-balancers --names writepath-tb-lb --region ap-northeast-1 --query 'LoadBalancers[0].State.Code')
+    status_of_elb=$(aws elbv2 describe-load-balancers --names demo --region ap-northeast-1 --query 'LoadBalancers[0].State.Code')
     (( count_status_of_elb += 1 ))
     if [ "$count_status_of_elb" = 12 ];then
         echo "ELB status is abnormal"
@@ -22,7 +22,7 @@ count_status_of_test_dev=0
 until [ "$status_of_test_dev" = "\"ACTIVE"\" ]
 do
     sleep 5
-    status_of_test_dev=$(aws ecs describe-services --services service-for-test --cluster writepath-dev --region ap-northeast-1 --query 'services[0].status')
+    status_of_test_dev=$(aws ecs describe-services --services demo-service-test --cluster demo --region ap-northeast-1 --query 'services[0].status')
     (( count_status_of_test_dev += 1 ))
     if [ "$count_status_of_test_dev" = 12 ];then
         echo "ECS build failed"

@@ -25,7 +25,7 @@ create_dev_ECS_Service(){
       --launch-type FARGATE \
       --platform-version LATEST \
       --network-configuration '{"awsvpcConfiguration":{"subnets":["subnet-a510e78e"],"securityGroups":["sg-0f73c052e6a8549f7"],"assignPublicIp":"ENABLED"}}' \
-      --load-balancers '{"targetGroupArn":"arn:aws:elasticloadbalancing:ap-northeast-1:294437145362:targetgroup/ecs-demo-service/82131714021d4d77","containerName":"demo-container","containerPort":8000}' \
+      --load-balancers '{"targetGroupArn":"arn:aws:elasticloadbalancing:ap-northeast-1:294437145362:targetgroup/ecs-demo-service-dev/019b2ccac15bb339","containerName":"demo-container","containerPort":8000}' \
       --health-check-grace-period-seconds 60 \
       --region ap-northeast-1
 }
