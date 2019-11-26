@@ -20,8 +20,8 @@ jobs:
     - python3 manage.py migrate --run-syncdb --settings=ci_cd_demo.settings
     - PYTHONPATH=./ pytest --ds=ci_cd_demo.settings --cov-config=.coveragerc --cov=./ --cov-report=xml
   - stage: functional_test
-    if: branch = develop && type IN (push)
-    name: build ecs container and functional test deploy to develop after test success
+    if: branch = basic_settings && type IN (push)
+    name: build ecs container and functional test deploy to master after test success
     sudo: required
     services: docker
     script:
@@ -32,25 +32,14 @@ jobs:
     - |
       bash travis/deploy_script.sh create_test_ECS_Service
       bash travis/functional_test.sh
-      aws ecs delete-service --cluster writepath-dev --service service-for-test --force --region ap-northeast-1
+      aws ecs delete-service --cluster demo --service demo-service-test --force --region ap-northeast-1
     after_success:
     - |
-      status_of_service_dev=$(aws ecs describe-services --services service-dev --cluster writepath-dev --region ap-northeast-1 --query 'services[0].status')
+      status_of_service_dev=$(aws ecs describe-services --services demo-service-dev --cluster demo --region ap-northeast-1 --query 'services[0].status')
       if [ "$status_of_service_dev" = "\"ACTIVE"\" ];then
-      aws ecs update-service --cluster writepath-dev --service service-dev --region ap-northeast-1 --force-new-deployment;
+      aws ecs update-service --cluster demo --service demo-service-dev --region ap-northeast-1 --force-new-deployment;
       else
       bash travis/deploy_script.sh create_dev_ECS_Service
-      fi
-  - stage: deploy_to_prod
-    name: deploy to production
-    if: branch = master && type IN (push)
-    script:
-    - |
-      status_of_service_prod=$(aws ecs describe-services --services service-prod --cluster writepath-dev --region ap-northeast-1 --query 'services[0].status')
-      if [ "$status_of_service_prod" = "\"ACTIVE"\" ];then
-      aws ecs update-service --cluster writepath-dev --service service-prod --region ap-northeast-1 --force-new-deployment;
-      else
-      bash travis/deploy_script.sh create_prod_ECS_Service
       fi
 env:
   global:
