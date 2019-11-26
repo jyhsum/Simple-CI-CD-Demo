@@ -1,0 +1,59 @@
+verson: 0.0
+dist: xenial
+language: python
+python:
+- '3.7'
+install:
+- pip3 install -r requirements.txt
+- pip3 install awscli --upgrade
+- export PATH=$PATH:$HOME/.local/bin
+- eval $(aws ecr get-login --region ap-northeast-1 --no-include-email)
+jobs:
+  include:
+  - stage: unittest
+    if: branch = develop && type IN (pull_request)
+    name: unit tests
+    script:
+    - flake8 ci_cd_demo/
+    - cd ci_cd_demo
+    - python3 manage.py makemigrations --settings=ci_cd_demo.settings
+    - python3 manage.py migrate --run-syncdb --settings=ci_cd_demo.settings
+    - PYTHONPATH=./ pytest --ds=ci_cd_demo.settings --cov-config=.coveragerc --cov=./ --cov-report=xml
+  - stage: functional_test
+    if: branch = develop && type IN (push)
+    name: build ecs container and functional test deploy to develop after test success
+    sudo: required
+    services: docker
+    script:
+    - docker build -t demo .
+    - docker tag demo:latest $REPO_URL:latest
+    - docker tag demo:latest $REPO_URL:$(git rev-parse --short HEAD)
+    - docker push $REPO_URL
+    - |
+      bash travis/deploy_script.sh create_test_ECS_Service
+      bash travis/functional_test.sh
+      aws ecs delete-service --cluster writepath-dev --service service-for-test --force --region ap-northeast-1
+    after_success:
+    - |
+      status_of_service_dev=$(aws ecs describe-services --services service-dev --cluster writepath-dev --region ap-northeast-1 --query 'services[0].status')
+      if [ "$status_of_service_dev" = "\"ACTIVE"\" ];then
+      aws ecs update-service --cluster writepath-dev --service service-dev --region ap-northeast-1 --force-new-deployment;
+      else
+      bash travis/deploy_script.sh create_dev_ECS_Service
+      fi
+  - stage: deploy_to_prod
+    name: deploy to production
+    if: branch = master && type IN (push)
+    script:
+    - |
+      status_of_service_prod=$(aws ecs describe-services --services service-prod --cluster writepath-dev --region ap-northeast-1 --query 'services[0].status')
+      if [ "$status_of_service_prod" = "\"ACTIVE"\" ];then
+      aws ecs update-service --cluster writepath-dev --service service-prod --region ap-northeast-1 --force-new-deployment;
+      else
+      bash travis/deploy_script.sh create_prod_ECS_Service
+      fi
+env:
+  global:
+  - REPO_URL=294437145362.dkr.ecr.ap-northeast-1.amazonaws.com/demo
+  - AWS_ACCESS_KEY_ID=AKIAUJDOSJMJGMUC45BS
+  - secure: dtqSY4TKK8Mb0ZkL9nO0hdbYXtDg48rylHD3OwSttfpx7q4BG2bB5nVNWSclOEkU6d/jsmF+P/BYrK+D5zZC5Xxif7klbJ6XfVvrLiJ3o5ZP+PNwa9/a1ykh1m2glVHmmh46slP0qiPdy77ReUSPncZ9wqpRcfZwRjvUJjl++AhLfN9zpnZ31m0kqVYuyisulB1MkYsgoA6WkZbXmzLgrd8//WaCYQjuYartfkwvS4ZMDHMcYxehf8fFV7No9qh2/VqBW2W/PErP10o6mj8EbmDlRLsfasoaL1polVzfpifr/58Y09UdeykT8JAUkIxDeH7Z59GGvHjYHoX6q4gMgfVQBvdHHTb4N7vYLzpxzPsdd9psCN8PvbghvtOp6UGcgod7hh7VRS3chxTE7PW4G/Cb0BT/6QK5KE87OlPHw7+JsSielrrvO2t6p/AB50139VigxYL1Z5CtdcrwLUKDMH43LKh5umcgEAFyPtaZLq0bND8BcGKAQeYqk4VTWT4/rOinJ65CHYERKf9Si0vfTEITsWGSZEDLx34tNFK9q8g4roXz4fqCBJodL8lVepfXQ/UKkHtBytNCrwhBSOlt8kk4AYPnP9laVCMaoG5snTjFTQEjk0KGlJb4XCfRV2BFzmkwxBGYwoTcJQxLP8jLpjcSeedDxoocchVYqpSJTto=
