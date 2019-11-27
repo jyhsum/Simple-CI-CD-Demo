@@ -17,7 +17,7 @@ create_test_ECS_Service(){
 }
 
 create_dev_ECS_Service(){
-    echo "Create ECS service for development"
+    echo "Create ECS service for development environment"
     aws ecs create-service \
       --cluster demo \
       --service-name demo-service-dev \

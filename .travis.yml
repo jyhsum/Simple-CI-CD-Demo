@@ -20,7 +20,8 @@ jobs:
     - PYTHONPATH=./ pytest --cov-config=.coveragerc --cov=./ --cov-report=xml
   - stage: functional_test
     if: branch = basic_settings && type IN (push)
-    name: build ecs container and do functional test deploy to develop after test success
+    name: build ecs container and do functional test ,deploy to develop after test
+      success
     sudo: required
     services: docker
     script:
@@ -45,3 +46,9 @@ env:
   - REPO_URL=294437145362.dkr.ecr.ap-northeast-1.amazonaws.com/demo
   - AWS_ACCESS_KEY_ID=AKIAUJDOSJMJGMUC45BS
   - secure: L+Vm0/EcLCG7hB4IYO0+fedtPYL/PL//chOtxecQxLQs4COlmdT1rfQKHhkbzNSLE5ltA8Bix/xBYuKeRz8+QxGMzLCcpUWkVAb1MnjfbeSK0lm03JWpy7aeGdS2aOAr85pm+uFujrOZ78pnUceB+QYps1sjwGrV+z9mf5dpBRqP/psVLks2yrB1MrosBJyo/LFHb7DauIhfwdPycid26reqp1G5bp0x0adtXos98Qhx/waY8s5XcB46aEi2+IjyxPD2eGaftwtfFV3VrcReH3K3rvBKtVB+BH7tney8tEvA501oysmkoUwkDM/HBFIzvW6gFAhntN1GcN2NCPE5uCtPMjL8KR6OaKj4QjZbkqtSmgXbXryvjJuBgg/cC5C3BpShy+l/cuuqYg16BlIvuaV9x++xYvN/TxvWKjLYImiUihD3y6h7jHsFJR1IEcs7+6xp140E1yZx+2FLF8DrR+2yXfvG4d9E/20dt8WCn9qICA0qWNTZ/SyF/HXMW0+fPB4Q/QtR1qntisoX/QJaAj4V6AexuR2HCojHlQ/VVpl4vhlke+8soMu7A+g5ZqLvZx8PT/+P5/D15E6Tauo0WzDjYZSsgLizrDS1c2josSG9ftIg+XI/stPv5DGuG13SD8v9TVodgy7sNQvb9WJWBe3S2SN5vjAgTFLVA3OYRsY=
+notifications:
+  slack:
+    rooms:
+      secure: LWZ0k+8dO5uCryvf6gWoA7P1CgCnI/v2hR4RpM7KgGgrsHYCrJsb2t2qVmQxwN5DLKE0xqw1DPxJzhWXRT3lLR5PFvVznqcF5FvmZNhhA8kTvO3wQTfkkv4myq0N+/AgRqj8ZZksfWUjGxNm3qsGOvy+gHki9DBVLq5cGuYPB8h59SXY45rDY5FLvHF128ecusWHbBZqf3w1WJ4MRQ0WAEE/Yngki+81xwd+MFiffdFGjoZpkbsBoen8IxqKhNFYw5WehRwR1ipaUpVXVULSH6BJGQAbjP9HBtIPmeDremEk3Y+aLzNz76sAUHn9NVebdgwv4RJByjw2/kYcp/xO2Giqjgwz6oRA3hUyLJZAO8Apr82MlitAzSRbXHFalIbvUvTmVBBtAakwalpdWrYsjsPup0k5SXpSjX+u5fgFpL781KOU/B4jh9uQWLUFjcmeh9Aoa6ASoLLVUwwoymoR5qPwwNWj2Izvu6QRrXhK6oJXP4/wnRO96n9KBH14HqreKZsvIxFyu/L1bsxnUsKaufHA520nbRStLB2KicnDHMytpSxIxiOmTrrtOYXpky80VFylFzA4goVVuXxTpVBxiFtQoYdTxaBbCcocBUmNyP9S92WewXnzb8VI0HAyN+uX8iwJqkIdD0aiOz7RFXEjdX0qafu/4vjxRmdJv0/Om6g=
+    on_success: always
+    on_failure: always

@@ -16,8 +16,9 @@ Including another URLconf
 """
 from django.urls import path
 from demo.views import hello_view
-
+from health_check.views import health_check_view
 
 urlpatterns = [
     path('hello', hello_view.as_view()),
+    path('health_check', health_check_view.as_view()),
 ]
