@@ -9,4 +9,4 @@ class hello_view(APIView):
     def get(self, request):
         """Return response."""
 
-        return HttpResponse("ok")
+        return HttpResponse("okkk")
