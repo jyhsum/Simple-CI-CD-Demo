@@ -19,9 +19,8 @@ jobs:
     - python3 manage.py migrate --run-syncdb --settings=ci_cd_demo.settings
     - PYTHONPATH=./ pytest --cov-config=.coveragerc --cov=./ --cov-report=xml
   - stage: functional_test
-    if: branch = basic_settings && type IN (push)
-    name: build ecs container and do functional test ,deploy to develop after test
-      success
+    if: branch = develop && type IN (push)
+    name: building ecs container and doing functional test ,deploying to develop after testing success
     sudo: required
     services: docker
     script:
