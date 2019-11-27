@@ -1,1 +1,1 @@
-# SimpleDemo
+# SimplyDemo

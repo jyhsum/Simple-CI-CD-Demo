@@ -1,0 +1,50 @@
+dist: xenial
+language: python
+python:
+- '3.7'
+install:
+- pip3 install -r requirements.txt
+- pip3 install awscli --upgrade
+- export PATH=$PATH:$HOME/.local/bin
+- eval $(aws ecr get-login --region ap-northeast-1 --no-include-email)
+jobs:
+  include:
+  - stage: unittest
+    if: branch = develop && type IN (pull_request)
+    name: unit tests
+    script:
+    - flake8 ci_cd_demo/
+    - cd ci_cd_demo
+    - python3 manage.py makemigrations --settings=ci_cd_demo.settings
+    - python3 manage.py migrate --run-syncdb --settings=ci_cd_demo.settings
+    - PYTHONPATH=./ pytest --cov-config=.coveragerc --cov=./ --cov-report=xml
+  - stage: functional_test
+    if: branch = develop && type IN (push)
+    name: building ecs container and doing functional test ,deploying to develop after testing success
+    sudo: required
+    services: docker
+    script:
+    - docker build -t demo .
+    - docker tag demo:latest $REPO_URL:latest
+    - docker tag demo:latest $REPO_URL:$(git rev-parse --short HEAD)
+    - docker push $REPO_URL
+    - |
+      bash travis/deploy_script.sh create_test_ECS_Service
+      bash travis/functional_test.sh
+      aws ecs delete-service --cluster demo --service demo-service-test --force --region ap-northeast-1
+    after_success:
+    - |
+      status_of_service_dev=$(aws ecs describe-services --services demo-service-dev --cluster demo --region ap-northeast-1 --query 'services[0].status')
+      if [ "$status_of_service_dev" = "\"ACTIVE"\" ];then
+      aws ecs update-service --cluster demo --service demo-service-dev --region ap-northeast-1 --force-new-deployment;
+      else
+      bash travis/deploy_script.sh create_dev_ECS_Service
+      fi
+env:
+  global:
+  - REPO_URL=294437145362.dkr.ecr.ap-northeast-1.amazonaws.com/demo
+  - AWS_ACCESS_KEY_ID=AKIAUJDOSJMJGMUC45BS
+  - secure: L+Vm0/EcLCG7hB4IYO0+fedtPYL/PL//chOtxecQxLQs4COlmdT1rfQKHhkbzNSLE5ltA8Bix/xBYuKeRz8+QxGMzLCcpUWkVAb1MnjfbeSK0lm03JWpy7aeGdS2aOAr85pm+uFujrOZ78pnUceB+QYps1sjwGrV+z9mf5dpBRqP/psVLks2yrB1MrosBJyo/LFHb7DauIhfwdPycid26reqp1G5bp0x0adtXos98Qhx/waY8s5XcB46aEi2+IjyxPD2eGaftwtfFV3VrcReH3K3rvBKtVB+BH7tney8tEvA501oysmkoUwkDM/HBFIzvW6gFAhntN1GcN2NCPE5uCtPMjL8KR6OaKj4QjZbkqtSmgXbXryvjJuBgg/cC5C3BpShy+l/cuuqYg16BlIvuaV9x++xYvN/TxvWKjLYImiUihD3y6h7jHsFJR1IEcs7+6xp140E1yZx+2FLF8DrR+2yXfvG4d9E/20dt8WCn9qICA0qWNTZ/SyF/HXMW0+fPB4Q/QtR1qntisoX/QJaAj4V6AexuR2HCojHlQ/VVpl4vhlke+8soMu7A+g5ZqLvZx8PT/+P5/D15E6Tauo0WzDjYZSsgLizrDS1c2josSG9ftIg+XI/stPv5DGuG13SD8v9TVodgy7sNQvb9WJWBe3S2SN5vjAgTFLVA3OYRsY=
+notifications:
+  slack:
+    secure: s6N+9IW0ULhcRFJCnVasNfgQ0OjW1N1hp/OC4FGFN5bWz6dD+cq9t2oS0D7eT4EL1/1VGZIkn8PL8GPyWjaf5fD+l54TMTkBcSkeblXMMX4AR41J6KBzSKpaaCEJS3TzxUkn0u9fuAJn5IUJWrLNmSnunbXiepiaxZVU/BUz5y69acwV3/0FMuDQO3liXP4RUWmhErjzV+ayy8xkAzwb64FMEMRGf70u0y/ZAUuxPzywvOw6h9GxWIgMv+PuNdRio+Dfhjf2tmjrIITLFWJvLzImf0bAevsFN2mHf15E7wfokgX89AIbihgc94R67+N3F8Ot1u4akUoVxufsv74HwOSylxC41aIhZYj8Vq9gjG8o1yRyeNAdzduz7LcBPHlRnnf0WRnSxWSAuOWW7/rWRywIgTjeUSLjsX/Pc1S7s5I64pQusxNczgJJr+hA5VHdmyTIHbE13Cyl/P53f6Yt5kZg03nYnOMRSPLo7pSlfGJojFbIBZiyfDGc+qD2mXAV+25+W4KLxxH35SBZGcYiGAQGhaJkMkIjay4fTV4vjgRinq7yQTsH5N8PHdYNMkmQAUqJAOn1doL9WzKg0+h5yD2Kx+LhgDeuTSgfCAu+NrOA5eaN3SLyikAS8pQixcn64vYPPgn7c4a9RPnzc5K171tz1xLCmtPYuJ5vLyJvCDQ=
