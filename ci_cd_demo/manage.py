@@ -5,6 +5,7 @@ import sys
 
 
 def main():
+    """Main entry point for all commands."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ci_cd_demo.settings')
     try:
         from django.core.management import execute_from_command_line

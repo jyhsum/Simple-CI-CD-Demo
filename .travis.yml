@@ -17,7 +17,7 @@ jobs:
     - cd ci_cd_demo
     - python3 manage.py makemigrations --settings=ci_cd_demo.settings
     - python3 manage.py migrate --run-syncdb --settings=ci_cd_demo.settings
-    - PYTHONPATH=./ pytest --ds=ci_cd_demo.settings --cov-config=.coveragerc --cov=./ --cov-report=xml
+    - PYTHONPATH=./ pytest --cov-config=.coveragerc --cov=./ --cov-report=xml
   - stage: functional_test
     if: branch = basic_settings && type IN (push)
     name: build ecs container and do functional test deploy to develop after test success
