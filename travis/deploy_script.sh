@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 create_test_ECS_Service(){
     echo "Create ECS service for functional test"
