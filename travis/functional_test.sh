@@ -1,6 +1,6 @@
 #!/bin/bash
 
-URL="http://demo-1046280049.ap-northeast-1.elb.amazonaws.com:8787/health_check"
+URL="http://demo-1046280049.ap-northeast-1.elb.amazonaws.com:8000/health_check"
 status_of_test_dev=$(aws ecs describe-services --services demo-service-test --cluster demo --region ap-northeast-1 --query 'services[0].status')
 status_of_elb=$(aws elbv2 describe-load-balancers --names demo --region ap-northeast-1 --query 'LoadBalancers[0].State.Code')
 
