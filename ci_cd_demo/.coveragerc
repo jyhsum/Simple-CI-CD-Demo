@@ -1,0 +1,19 @@
+[run]
+# branch (boolean, default false):
+# whether to measure branch coverage in addition to statement coverage.
+branch = true
+
+# omit (multi-string):
+# a list of file name patterns, the files to leave out of measurement or
+# reporting.
+omit =
+    */__init__.py
+    */migrations/*
+    */manage.py
+    */test*
+    */wsgi.py
+
+[report]
+# show_missing (boolean, default false):
+# when running a summary report, show missing lines.
+show_missing = true
