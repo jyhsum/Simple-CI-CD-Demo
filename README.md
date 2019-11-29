@@ -14,7 +14,8 @@ https://docs.google.com/presentation/d/1LIK4V-CkeFEjRYikOV7TW8xgXiFfIZ_jPHpeOWj1
 * .travis.yml 內的 token 與 secure 是我在 AWS 上的 IAM user token，demo 結束後都已移除，所以輪你實作時，你必須要產生自己的 token 
 
 
-* **千萬要記得：一定要把你的 secret token 加密後，再 push 到 GitHub 內，否則你的 aws 帳號會被鎖定。**
+* **千萬要記得：一定要把你的 secret token 使用 Travis CLI 加密後，再 push 到 GitHub 內，否則你的 aws 帳號會被鎖定。**
+(如何加密：https://docs.travis-ci.com/user/encryption-keys/)
 
 * 要怎樣把 GitHub 的 Pull Request 內的 merge 鎖住？請參考 https://help.github.com/en/github/administering-a-repository/configuring-protected-branches
 
